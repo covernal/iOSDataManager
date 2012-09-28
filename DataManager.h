@@ -1,6 +1,5 @@
 //
 //  DataManager.h
-//  WarbyParker
 //
 //  Created by Philip Hayes on 2/20/12.
 //  Copyright (c) 2012 happyMedium
@@ -14,7 +13,6 @@
 
 #import <Foundation/Foundation.h>
 
-NSString * binaryStringFromInteger( int number );
 @protocol DataManagerDelegate <NSObject>
 
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath;
@@ -41,7 +39,8 @@ NSString * binaryStringFromInteger( int number );
 //If at any time multi-threading is needed a second context must be managed and then passed back when done
 -(void)saveBackgroundContext;
 
-#pragma mark - 
+#pragma mark - fetchedResultsController helpers
+
 //Simplification of the current fetching opperation
 -(NSArray *) getResultsWithEntity:(NSString*)entity sortDescriptor:(NSString*)sortDesc batchSize:(int)batchSize;
 -(NSArray *) getResultsWithEntity:(NSString*)entity sortDescriptor:(NSString*)sortDesc sortPredicate:(NSPredicate*)sortPredicate batchSize:(int)batchSize;
@@ -49,18 +48,23 @@ NSString * binaryStringFromInteger( int number );
 -(NSFetchedResultsController*)fetchedResultsControllerWithEntity:(NSString*)entity sortDescriptor:(NSString*)sortDesc batchSize:(int)batchSize;
 -(NSFetchedResultsController*)fetchedResultsControllerWithEntity:(NSString*)entity sortDescriptor:(NSString*)sortDesc sortPredicate:(NSPredicate*)sortPredicate batchSize:(int)batchSize;
 
+
+#pragma  mark - NSUserDefaults helpers
 /* methods for using NSUserDefaults */
 
 -(id) defaultUserObjectForKey:(NSString *)key;
 -(void) setDefaultUserObject:(id)obj forKey:(NSString *)key;
 
+#pragma mark - Image loading/cache helpers
 /* methods for saving images to/loading from disk */
-
 -(NSString *) saveImageToDevice:(UIImage *)file withName:(NSString *)name extension:(NSString *)ext;
 -(BOOL) removeFile:(NSString *)fileName;
 -(UIImage *) loadImageNamed:(NSString *)imageName;
 -(void) clearImageCache;
+-(void) removeImageFromImageCache:(UIImage *)image;
+-(void) removeImageFromImageCacheNamed:(NSString *)imageName;
 
+#pragma mark - other helpers
 /* method for loading view from a Nib */
 -(UIView *) loadViewFromNib:(NSString *) nibName andOwner:(id) owner;
 

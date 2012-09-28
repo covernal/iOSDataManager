@@ -1,6 +1,5 @@
 //
 //  DataManager.m
-//  WarbyParker
 //
 //  Created by Philip Hayes on 2/20/12.
 //  Copyright (c) 2012 happyMedium
@@ -11,6 +10,7 @@
 //
 //THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+
 #import "DataManager.h"
 
 @implementation DataManager
@@ -19,10 +19,10 @@
 @synthesize fetchedResultsController = __fetchedResultsController;
 @synthesize managedObjectContext = __managedObjectContext;
 static DataManager* dataManager;
-int districtNumber = 0;
 
 NSManagedObjectContext *backgroundContext;
 NSMutableDictionary * imageCache;
+
 
 +(DataManager*)SharedDataManager{
     @synchronized(self){
@@ -37,18 +37,23 @@ NSMutableDictionary * imageCache;
     return dataManager;
 }
 
--(void)saveBackgroundContext{
-    self.managedObjectContext = backgroundContext;
-}
-
 -(id)init{
     
-    if((self = [super init])){
-        
+    if((self = [super init])){}
+    return self;
+}
+
+-(void)update{
+    NSManagedObjectContext *context = self.managedObjectContext;
+    NSError *error;
+    if (![context save:&error]) {
+        NSLog(@"Whoops, couldn't save: %@", [error localizedDescription]);
+    } else {
         
     }
-    
-    return self;
+}
+-(void)saveBackgroundContext{
+    self.managedObjectContext = backgroundContext;
 }
 
 
@@ -66,9 +71,7 @@ NSMutableDictionary * imageCache;
     
 }
 
-#pragma mark - Fetched Results Controller helper ---------
-#pragma mark ---------------------------------------------
-#pragma mark ---------------------------------------------
+#pragma mark - fetchedResultsController helpers
 
 /* wrappers for initializing fetchedResultsController, performing fetch, and returning results */
 
@@ -154,6 +157,8 @@ NSMutableDictionary * imageCache;
     return __fetchedResultsController;
 }
 
+#pragma mark - NSFetchedResultsControllerDelegate methods
+
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
     // The fetch controller is about to start sending change notifications, so prepare the table view for updates.
    
@@ -201,18 +206,8 @@ NSMutableDictionary * imageCache;
     
 }
 
--(void)update{
-    NSManagedObjectContext *context = self.managedObjectContext;
-    NSError *error;
-    if (![context save:&error]) {
-        NSLog(@"Whoops, couldn't save: %@", [error localizedDescription]);
-    } else {
-        
-    }
-}
 
-
-#pragma  mark - NSUserDefaults methods
+#pragma  mark - NSUserDefaults helpers
 
 /* see Notes file for info on what NSUserDefaults keys the app uses */
 
@@ -229,7 +224,7 @@ NSMutableDictionary * imageCache;
      [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
-#pragma mark - Document Saving methods
+#pragma mark - Image loading/cache helpers
 
 -(NSString *)saveImageToDevice:(UIImage *)image withName:(NSString *)imageName extension:(NSString *)ext
 {
@@ -318,6 +313,17 @@ NSMutableDictionary * imageCache;
     {
         [imageCache removeAllObjects];
     }
+}
+
+-(void) removeImageFromImageCache:(UIImage *)image
+{
+    NSArray * allKeys = [imageCache allKeysForObject:image];
+    [imageCache removeObjectsForKeys:allKeys];
+}
+
+-(void) removeImageFromImageCacheNamed:(NSString *)imageName
+{
+    [imageCache removeObjectForKey:imageName];
 }
 
 #pragma mark - Load view from Nib
