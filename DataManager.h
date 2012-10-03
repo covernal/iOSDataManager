@@ -1,5 +1,6 @@
 //
 //  DataManager.h
+//  WarbyParker
 //
 //  Created by Philip Hayes on 2/20/12.
 //  Copyright (c) 2012 happyMedium
@@ -20,10 +21,10 @@
 @end
 
 @interface DataManager : NSObject<NSFetchedResultsControllerDelegate>{
-
+    
 }
 
-//Passed in from the app delegate 
+//Passed in from the app delegate
 @property (strong, nonatomic) NSFetchedResultsController *fetchedResultsController;
 @property (strong, nonatomic) NSManagedObjectContext *managedObjectContext;
 
@@ -59,6 +60,7 @@
 /* methods for saving images to/loading from disk */
 -(NSString *) saveImageToDevice:(UIImage *)file withName:(NSString *)name extension:(NSString *)ext;
 -(BOOL) removeFile:(NSString *)fileName;
+-(BOOL) doesFileExist:(NSString *)imageName;
 -(UIImage *) loadImageNamed:(NSString *)imageName;
 -(void) clearImageCache;
 -(void) removeImageFromImageCache:(UIImage *)image;

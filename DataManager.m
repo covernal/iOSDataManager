@@ -1,5 +1,6 @@
 //
 //  DataManager.m
+//  WarbyParker
 //
 //  Created by Philip Hayes on 2/20/12.
 //  Copyright (c) 2012 happyMedium
@@ -10,7 +11,6 @@
 //
 //THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-
 #import "DataManager.h"
 
 @implementation DataManager
@@ -67,7 +67,7 @@ NSMutableDictionary * imageCache;
     
     
     
-    return __fetchedResultsController;    
+    return __fetchedResultsController;
     
 }
 
@@ -104,20 +104,20 @@ NSMutableDictionary * imageCache;
 }
 
 -(NSFetchedResultsController*) fetchedResultsControllerWithEntity:(NSString*)entity sortDescriptor:(NSString*)sortDesc batchSize:(int)batchSize{
-
+    
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    NSEntityDescription *entityDescription = [NSEntityDescription 
+    NSEntityDescription *entityDescription = [NSEntityDescription
                                               entityForName:entity inManagedObjectContext:self.managedObjectContext];
     [fetchRequest setEntity:entityDescription];
-    NSSortDescriptor *sort = [[NSSortDescriptor alloc] 
+    NSSortDescriptor *sort = [[NSSortDescriptor alloc]
                               initWithKey:sortDesc ascending:YES];
     [fetchRequest setSortDescriptors:[NSArray arrayWithObject:sort]];
     
     [fetchRequest setFetchBatchSize:batchSize];
     
-    NSFetchedResultsController *theFetchedResultsController = 
-    [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest 
-                                        managedObjectContext:self.managedObjectContext sectionNameKeyPath:nil 
+    NSFetchedResultsController *theFetchedResultsController =
+    [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
+                                        managedObjectContext:self.managedObjectContext sectionNameKeyPath:nil
                                                    cacheName:nil];
     self.fetchedResultsController = theFetchedResultsController;
     __fetchedResultsController.delegate = self;
@@ -125,18 +125,18 @@ NSMutableDictionary * imageCache;
     
     
     
-    return __fetchedResultsController;   
+    return __fetchedResultsController;
 }
 
 -(NSFetchedResultsController*)fetchedResultsControllerWithEntity:(NSString*)entity sortDescriptor:(NSString*)sortDesc sortPredicate:(NSPredicate*)sortPredicate batchSize:(int)batchSize{
-
+    
     if (__fetchedResultsController != nil && entity == __fetchedResultsController.fetchRequest.entityName) {
         return __fetchedResultsController;
     }
     
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     
-    NSEntityDescription *entityDescription = [NSEntityDescription 
+    NSEntityDescription *entityDescription = [NSEntityDescription
                                               entityForName:entity inManagedObjectContext:self.managedObjectContext];
     
     [fetchRequest setEntity:entityDescription];
@@ -147,9 +147,9 @@ NSMutableDictionary * imageCache;
     
     [fetchRequest setFetchBatchSize:batchSize];
     
-    NSFetchedResultsController *theFetchedResultsController = 
-    [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest 
-                                        managedObjectContext:self.managedObjectContext sectionNameKeyPath:nil 
+    NSFetchedResultsController *theFetchedResultsController =
+    [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
+                                        managedObjectContext:self.managedObjectContext sectionNameKeyPath:nil
                                                    cacheName:nil];
     self.fetchedResultsController = theFetchedResultsController;
     __fetchedResultsController.delegate = self;
@@ -161,7 +161,7 @@ NSMutableDictionary * imageCache;
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
     // The fetch controller is about to start sending change notifications, so prepare the table view for updates.
-   
+    
 }
 
 
@@ -196,7 +196,7 @@ NSMutableDictionary * imageCache;
     
     switch(type) {
             
-        
+            
     }
 }
 
@@ -213,15 +213,15 @@ NSMutableDictionary * imageCache;
 
 -(id)defaultUserObjectForKey:(NSString *)key
 {
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];  
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 	return [defaults objectForKey:key];
 }
 
 -(void)setDefaultUserObject:(id)obj forKey:(NSString *)key
 {
-     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];  
-     [defaults setObject:obj forKey:key];
-     [[NSUserDefaults standardUserDefaults] synchronize];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setObject:obj forKey:key];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 #pragma mark - Image loading/cache helpers
@@ -233,15 +233,15 @@ NSMutableDictionary * imageCache;
     NSString * fileName = [NSString stringWithFormat:@"%@.%@",imageName, [ext lowercaseString]];
     NSString *localFilePath = [documentsDirectory stringByAppendingPathComponent:fileName];
     NSError * error;
-    if ([[ext lowercaseString] isEqualToString:@"png"]) 
+    if ([[ext lowercaseString] isEqualToString:@"png"])
     {
         [UIImagePNGRepresentation(image) writeToFile:localFilePath options:NSAtomicWrite error:&error];
     }
-    else if ([[ext lowercaseString] isEqualToString:@"jpg"] || [[ext lowercaseString] isEqualToString:@"jpeg"]) 
+    else if ([[ext lowercaseString] isEqualToString:@"jpg"] || [[ext lowercaseString] isEqualToString:@"jpeg"])
     {
         [UIImageJPEGRepresentation(image, 1.0) writeToFile:localFilePath options:NSAtomicWrite error:&error];
     }
-    else 
+    else
     {
         NSLog(@"Image Save Failed\nExtension: (%@) is not recognized, use (PNG/JPG)", ext);
         return [NSString stringWithFormat:@""];
@@ -277,9 +277,31 @@ NSMutableDictionary * imageCache;
     
 }
 
+-(BOOL) doesFileExist:(NSString *)imageName
+{
+    
+    /* does it exist in the bundle? */
+	if([[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithFormat:@"%@/%@",[[NSBundle mainBundle] resourcePath], imageName]])
+    {
+        return true;
+    }
+    
+    /* does it exist in the documents path? */
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *localFilePath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%@",imageName]];
+    if([[NSFileManager defaultManager] fileExistsAtPath:localFilePath])
+    {
+        return true;
+    }
+    
+    /* doesn't exist anywhere that we would put it */
+    return false;
+}
+
 
 -(UIImage *) loadImageNamed:(NSString *)imageName
-{    
+{
     if(imageCache == nil)
     {
         imageCache = [NSMutableDictionary dictionary];
@@ -288,7 +310,7 @@ NSMutableDictionary * imageCache;
     UIImage * result = [imageCache objectForKey:imageName];
     
     if(result == nil)
-    {		
+    {
         result = [UIImage imageWithContentsOfFile:[NSString stringWithFormat:@"%@/%@",[[NSBundle mainBundle] resourcePath], imageName]];
         
         if(result == nil)
@@ -303,6 +325,11 @@ NSMutableDictionary * imageCache;
         {
             [imageCache setObject:result forKey:imageName];
         }
+    }
+    
+    if(result == nil)
+    {
+		NSLog(@"%@ not found", imageName);
     }
     return result;
 }
