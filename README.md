@@ -7,7 +7,8 @@ DataManager's main purpose is to make interacting with CoreData a little easier.
 What it DOESN'T do is replace the need for having your AppDelegate setup with a CoreData stack.
 
 
-Usage:
+Usage
+-----
 
 DataManager is meant to exist as a singleton, accessed through [DataManager SharedDataManager].
 In your AppDelegate, in application:didFinishLaunchingWithOptions, add the line:
@@ -28,7 +29,8 @@ Gender
 Let's also assume you've got a reference to the DataManager signleton called dm 
     DataManager * dm = [DataManager SharedDataManager];
 
-CoreData Methods:
+CoreData Methods
+----------------
 
 DataManager has a handful of simple methods that directly return the results of a fetchedResultController.
 Instead of creating a fetchedResultsController, telling to to fetch, and then getting the fetchedObjects, you can call:
@@ -46,7 +48,8 @@ DataManager also has methods to return a fetchedResultsController:
     NSFetchedResultsController * controller = [dm fetchedResultsControllerWithEntity:@"Person" sortDescriptor:@"Height" batchSize:20];
 
 
-NSUserDefaults:
+NSUserDefaults
+--------------
 
 DataManager has two simple wrappers that handle updating the standardUserDefaults.
 
@@ -54,13 +57,17 @@ DataManager has two simple wrappers that handle updating the standardUserDefault
     SomeObject * ThatObjectYouJustSaved = [dm defaulUserObjectForKey:@"anyKey"];
 
 
-Image saving/loading/caching:
-
+Image saving/loading/caching
+----------------------------
 DataManager has methods for doing basic things like saving/loading/deleting an image to the NSDocumentDirectory.
 
     [dm saveImageToDevice:pictureOfACat withName:@"aCat" extension:@"jpg"];  //jpg and png supported
     [dm loadImageNamed:@"aCat.jpg"];
     [dm removeFile:@"aCat.jpg"];
+
+And, if the content being saved isn't prompted by user input, you'll need to call:
+    [dm addSkipBackupAttributeToFile:@"mycat.jpg"];
+To flag the file to not be backed up by iCloud.
 
 DataManager also incorporates its own image cache. Using [UIImage imageNamed:] method caches the image, but you have no control over when and how an image is ever uncached, which can lead to memory issues. With DataManager, it will automatically cache any image loaded through loadImageNamed:, which saves time when loading the same image for a second time. Whenever you want to clear the cache, you can call:
 
@@ -72,13 +79,22 @@ Or to remove a specific image:
 Or
     [dm removeImageFromImageCacheNamed:@"imageName.jpg"];
 
+DataManager also has methods for finding if a file exists:
+	[dm doesFileExist:@"myCatsBirthdays.xls"];
+    
+And a special method for finding images (including testing for @2x retina images)
+	[dm doesImageExist:@"catsPlayingPoker.png"];
+    
 
-Other Helpers:
+Other Helpers
+-------------
 
 The rest of the helpers are just simple things that we got tired of having to remember how to do.
 
 You can load a UIView from a nib:
 
-    SomeUIViewClass * view = [dm loadViewFromNib:@"SomeUIViewClassNib" andOwner:self];
+    SomeUIViewClass * view = [dm loadViewFromNib:@"SomeUIViewClassNib_iPhone" andOwner:self];
 
+You can also get a nib Name suffixed with the appropriate device name (_iPhone, _iPhone5, or _iPad)
 
+	SomeUIViewClass * view = [dm loadViewFromNib:[dm nibNameWithDeviceSuffix:@"SomeUIViewClassNib"] andOwner:self];

@@ -13,7 +13,14 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
+#define IS_IPHONE ( [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone )
+#define IS_IPHONE_RETINA ( [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone && [[UIScreen mainScreen] scale] == 2.00 )
+#define IS_IPHONE_5 ( fabs( ( double )[ [ UIScreen mainScreen ] bounds ].size.height - ( double )568 ) < DBL_EPSILON )
+
+#define IS_IPAD ( [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad )
+#define IS_IPAD_RETINA ( [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad && [[UIScreen mainScreen] scale] == 2.00 )
 @protocol DataManagerDelegate <NSObject>
 
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath;
@@ -56,11 +63,14 @@
 -(id) defaultUserObjectForKey:(NSString *)key;
 -(void) setDefaultUserObject:(id)obj forKey:(NSString *)key;
 
-#pragma mark - Image loading/cache helpers
+#pragma mark - File/image loading/cache helpers
 /* methods for saving images to/loading from disk */
+
 -(NSString *) saveImageToDevice:(UIImage *)file withName:(NSString *)name extension:(NSString *)ext;
+- (BOOL)addSkipBackupAttributeToFile:(NSString *)fileName;
 -(BOOL) removeFile:(NSString *)fileName;
--(BOOL) doesFileExist:(NSString *)imageName;
+-(BOOL) doesFileExist:(NSString *)fileName;
+-(BOOL) doesImageExist:(NSString *)imageName;
 -(UIImage *) loadImageNamed:(NSString *)imageName;
 -(void) clearImageCache;
 -(void) removeImageFromImageCache:(UIImage *)image;
@@ -69,5 +79,5 @@
 #pragma mark - other helpers
 /* method for loading view from a Nib */
 -(UIView *) loadViewFromNib:(NSString *) nibName andOwner:(id) owner;
-
+-(NSString *)nibNameWithDeviceSuffix:(NSString *)name;
 @end

@@ -12,7 +12,7 @@
 //THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 #import "DataManager.h"
-
+#import <sys/xattr.h>
 @implementation DataManager
 
 @synthesize delegate;
@@ -235,11 +235,11 @@ NSMutableDictionary * imageCache;
     NSError * error;
     if ([[ext lowercaseString] isEqualToString:@"png"])
     {
-        [UIImagePNGRepresentation(image) writeToFile:localFilePath options:NSAtomicWrite error:&error];
+        [UIImagePNGRepresentation(image) writeToFile:localFilePath options:NSDataWritingAtomic error:&error];
     }
     else if ([[ext lowercaseString] isEqualToString:@"jpg"] || [[ext lowercaseString] isEqualToString:@"jpeg"])
     {
-        [UIImageJPEGRepresentation(image, 1.0) writeToFile:localFilePath options:NSAtomicWrite error:&error];
+        [UIImageJPEGRepresentation(image, 1.0) writeToFile:localFilePath options:NSDataWritingAtomic error:&error];
     }
     else
     {
@@ -266,7 +266,7 @@ NSMutableDictionary * imageCache;
     BOOL didDelete = [fileManager removeItemAtPath:localFilePath error:&error];
     if(error)
     {
-        NSLog(@"   error removing file: %@", error);
+        // NSLog(@"   error removing file: %@", error);
     }
     
     if(didDelete && imageCache && [imageCache objectForKey:fileName])
@@ -277,11 +277,54 @@ NSMutableDictionary * imageCache;
     
 }
 
--(BOOL) doesFileExist:(NSString *)imageName
+// you can't save files that aren't user files in iCloud. In 5.0.1, they allow you to set things to be skipped
+// by iCloud.
+// http://developer.apple.com/library/ios/#qa/qa1719/_index.html#//apple_ref/doc/uid/DTS40011342 for more info
+
+- (BOOL)addSkipBackupAttributeToFile:(NSString *)fileName
+{
+    NSString *currSysVer = [[UIDevice currentDevice] systemVersion];
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *localFilePath = [documentsDirectory stringByAppendingPathComponent:fileName];
+    
+    assert([[NSFileManager defaultManager] fileExistsAtPath: localFilePath]);
+    NSURL * URL = [NSURL fileURLWithPath:localFilePath];
+    
+    if([currSysVer isEqualToString:@"5.0.1"])		//system is 5.0.1
+    {
+        const char* filePath = [[URL path] fileSystemRepresentation];
+        
+        const char* attrName = "com.apple.MobileBackup";
+        u_int8_t attrValue = 1;
+        
+        int result = setxattr(filePath, attrName, &attrValue, sizeof(attrValue), 0, 0);
+        return result == 0;
+    }
+    else if([currSysVer compare:@"5.1" options:NSNumericSearch] == NSOrderedAscending)		//system is less than 5.1, and not 5.0.1
+    {
+        return false;																		//so we can't set this attribute
+    }
+    else	//we're greater than or equal to 5.1
+    {
+        NSError *error = nil;
+        
+        
+        BOOL success = [URL setResourceValue: [NSNumber numberWithBool: YES]
+                                      forKey: NSURLIsExcludedFromBackupKey error: &error];
+        if(!success){
+            NSLog(@"Error excluding %@ from backup %@", [URL lastPathComponent], error);
+        }
+        return success;
+    }
+}
+
+-(BOOL) doesFileExist:(NSString *)fileName
 {
     
     /* does it exist in the bundle? */
-	if([[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithFormat:@"%@/%@",[[NSBundle mainBundle] resourcePath], imageName]])
+	if([[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithFormat:@"%@/%@",[[NSBundle mainBundle] resourcePath], fileName]])
     {
         return true;
     }
@@ -289,7 +332,7 @@ NSMutableDictionary * imageCache;
     /* does it exist in the documents path? */
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documentsDirectory = [paths objectAtIndex:0];
-    NSString *localFilePath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%@",imageName]];
+    NSString *localFilePath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%@",fileName]];
     if([[NSFileManager defaultManager] fileExistsAtPath:localFilePath])
     {
         return true;
@@ -297,6 +340,23 @@ NSMutableDictionary * imageCache;
     
     /* doesn't exist anywhere that we would put it */
     return false;
+}
+
+-(BOOL) doesImageExist:(NSString *)imageName
+{
+    if([UIScreen mainScreen].scale == 2.0)
+    {
+        NSString * ext = [imageName pathExtension];
+        NSString * fileName = [imageName stringByDeletingPathExtension];
+        NSString * retinaImageName = [NSString stringWithFormat:@"%@@2x.%@", fileName,ext];
+        
+        if( [self doesFileExist:retinaImageName] )
+        {
+            return true;
+        }
+    }
+    
+    return [self doesFileExist:imageName];
 }
 
 
@@ -326,11 +386,6 @@ NSMutableDictionary * imageCache;
             [imageCache setObject:result forKey:imageName];
         }
     }
-    
-    if(result == nil)
-    {
-		NSLog(@"%@ not found", imageName);
-    }
     return result;
 }
 
@@ -359,6 +414,11 @@ NSMutableDictionary * imageCache;
 {
     NSArray *nibObjects = [[NSBundle mainBundle] loadNibNamed:nibName owner:owner options:nil];
     return [nibObjects objectAtIndex:0];
+}
+
+-(NSString *)nibNameWithDeviceSuffix:(NSString *)name
+{
+    return [NSString stringWithFormat:@"%@%@", name, (IS_IPHONE_5 ? @"_iPhone5" : ( IS_IPHONE ? @"_iPhone" : @"_iPad"))];
 }
 
 @end
