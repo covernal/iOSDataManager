@@ -98,3 +98,16 @@ You can load a UIView from a nib:
 You can also get a nib Name suffixed with the appropriate device name (_iPhone, _iPhone5, or _iPad)
 
 	SomeUIViewClass * view = [dm loadViewFromNib:[dm nibNameWithDeviceSuffix:@"SomeUIViewClassNib"] andOwner:self];
+    
+    
+Constants
+---------
+
+DataManager has several preprocessor constants defined:
+
+    #define IS_IPHONE 			( [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone )
+    #define IS_IPHONE_RETINA 	( [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone && [[UIScreen mainScreen] scale] == 2.00 )
+    #define IS_IPHONE_5 		( fabs( ( double )[ [ UIScreen mainScreen ] bounds ].size.height - ( double )568 ) < DBL_EPSILON )
+
+    #define IS_IPAD				( [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad )
+    #define IS_IPAD_RETINA 		( [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad && [[UIScreen mainScreen] scale] == 2.00 )
