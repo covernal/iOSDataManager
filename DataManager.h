@@ -56,7 +56,7 @@
 -(NSFetchedResultsController*)fetchedResultsControllerWithEntity:(NSString*)entity sortDescriptor:(NSString*)sortDesc batchSize:(int)batchSize;
 -(NSFetchedResultsController*)fetchedResultsControllerWithEntity:(NSString*)entity sortDescriptor:(NSString*)sortDesc sortPredicate:(NSPredicate*)sortPredicate batchSize:(int)batchSize;
 
-
+-(id)newObjectForEntityForName:(NSString *)name;
 #pragma  mark - NSUserDefaults helpers
 /* methods for using NSUserDefaults */
 

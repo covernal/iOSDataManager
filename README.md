@@ -47,6 +47,9 @@ DataManager also has methods to return a fetchedResultsController:
 
     NSFetchedResultsController * controller = [dm fetchedResultsControllerWithEntity:@"Person" sortDescriptor:@"Height" batchSize:20];
 
+To create a new Managed object, just call:
+	MyManagedObject * object = [dm newObjectForEntityForName:@"MyManagedObject"];
+
 
 NSUserDefaults
 --------------

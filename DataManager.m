@@ -157,6 +157,11 @@ NSMutableDictionary * imageCache;
     return __fetchedResultsController;
 }
 
+-(id)newObjectForEntityForName:(NSString *)name
+{
+    return [NSEntityDescription insertNewObjectForEntityForName:name inManagedObjectContext:self.managedObjectContext];
+}
+
 #pragma mark - NSFetchedResultsControllerDelegate methods
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
