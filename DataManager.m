@@ -103,6 +103,21 @@ NSMutableDictionary * imageCache;
     return [[self fetchedResultsController]fetchedObjects];
 }
 
+-(NSUInteger) getCountWithEntry:(NSString*)entity sortDescriptor:(NSString*)sortDesc sortPredicate:(NSPredicate*)sortPredicate batchSize:(int)batchSize
+{
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    [request setEntity:[NSEntityDescription entityForName:entity inManagedObjectContext:self.managedObjectContext]];
+    
+    [request setIncludesSubentities:NO]; //Omit subentities. Default is YES (i.e. include subentities)
+    
+    NSError *err;
+    NSUInteger count = [self.managedObjectContext countForFetchRequest:request error:&err];
+    if(count == NSNotFound) {
+        //Handle error
+    }
+    return count;
+}
+
 -(NSFetchedResultsController*) fetchedResultsControllerWithEntity:(NSString*)entity sortDescriptor:(NSString*)sortDesc batchSize:(int)batchSize{
     
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
